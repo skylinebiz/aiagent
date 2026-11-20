@@ -1,0 +1,33 @@
+services:
+  api:
+    container_name: librechat-browser
+    image: skylinebiz/librechat-browser:local
+    build:
+      context: .
+      dockerfile: Dockerfile
+    ports:
+      - "${HTTP_PORT:-3080}:3080"
+    user: "${LOCAL_UID:-1000}:${LOCAL_GID:-1000}"
+    environment:
+      HOST: 0.0.0.0
+      PORT: 3080
+      MONGO_URI: mongodb://mongodb:27017/LibreChat
+      LIBRECHAT_TEMP_CREDENTIALS_PATH: /app/data/.env.temp
+      BROWSER_PROFILE_DIR: /app/data/browser-profiles
+      ALLOW_REGISTRATION: "true"
+      SESSION_COOKIE_SECURE: "false"
+    volumes:
+      - ./data/librechat:/app/data
+      - ./uploads:/app/uploads
+      - ./logs:/app/logs
+    depends_on:
+      - mongodb
+    restart: unless-stopped
+
+  mongodb:
+    container_name: librechat-browser-mongodb
+    image: mongo:8.0.20
+    user: "${LOCAL_UID:-1000}:${LOCAL_GID:-1000}"
+    volumes:
+      - ./data/mongodb:/data/db
+    restart: unless-stopped
