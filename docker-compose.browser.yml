@@ -16,6 +16,7 @@ services:
       BROWSER_PROFILE_DIR: /app/data/browser-profiles
       ALLOW_REGISTRATION: "true"
       SESSION_COOKIE_SECURE: "false"
+      SCHEDULES_SINGLE_PROCESS: "true"
     volumes:
       - ./data/librechat:/app/data
       - ./uploads:/app/uploads

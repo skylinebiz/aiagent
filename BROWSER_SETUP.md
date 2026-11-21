@@ -22,6 +22,8 @@ docker compose --env-file .env -f docker-compose.browser.yml down
 
 Open `http://SERVER:HTTP_PORT`, register the single internal user, and select **Browser** from the chat tool picker or add it to a saved Agent. Open the **Browser** panel in the chat to see the server browser and its tabs. The Browser tool sends its action and page snapshot into the conversation; the panel refreshes screenshots as the page changes.
 
+If a new chat shows **“Unable to load this chat’s model or agent”**, configure at least one model provider first. Add a valid provider API key under **Settings → API keys → Provider API keys**, or configure a provider on the server. The browser feature supplies browser actions; it does not supply an LLM model or API key.
+
 ## Network access
 
 The app uses HTTP internally. Put it behind a VPN or an HTTPS reverse proxy manager for remote use; do not publish the HTTP port directly to the public internet. If the outer proxy uses HTTPS, configure LibreChat's `SESSION_COOKIE_SECURE=true` in the compose service environment before exposing the login page.
@@ -37,3 +39,19 @@ The app uses HTTP internally. Put it behind a VPN or an HTTPS reverse proxy mana
 ## Build/runtime notes
 
 The Docker image installs Chromium and Playwright in the LibreChat API container. The browser is headless, so no Linux desktop, X server, VNC, or Windows browser viewer is involved. Browser screenshots are fetched through LibreChat's authenticated API, not a public browser port.
+
+## Faster local development
+
+Use `docker-compose.browser.dev.yml` when changing the application code. It bind-mounts this checkout, runs the API under nodemon, and runs the client through Vite with hot reload. Its development dependencies live in a named Docker volume and are installed once. Editing JavaScript or client components does not rebuild the image. Workspace package changes need `npm run build:packages` inside the app container; restart that container afterward if the API imports the changed package.
+
+The development stack uses a separate database and defaults to `http://localhost:8458`, so it can run beside the regular stack on port 8457. Start it with:
+
+```bash
+docker compose --env-file .env -f docker-compose.browser.dev.yml up -d --build
+```
+
+For later source edits, the mounted API and Vite client reload automatically. Stop the development stack with:
+
+```bash
+docker compose --env-file .env -f docker-compose.browser.dev.yml down
+```
